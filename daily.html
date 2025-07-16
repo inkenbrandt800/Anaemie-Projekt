@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anämie-Früherkennung | Daily Stuff</title>
+    <link rel="stylesheet" href="./style.css">
+    <script type="module" src="./js/functions.js"></script>
+    <script type="module" src="./js/user.js"></script>
+    <script type="module" src="./js/daily.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="module">
+        import {verify} from "./js/user.js";
+        verify("standard")
+
+        if(sessionStorage.getItem("uploadedDaily") === "true"){
+            document.getElementById("successMessage").style.display = "block"
+            document.getElementById("mood-section").style.display = "none"
+            document.getElementById("symptoms-section").style.display = "none"
+            document.getElementById("tracking-section").style.display = "none"
+            document.getElementById("sports-section").style.display = "none"
+        } else {
+
+            let mood = sessionStorage.getItem("mood")
+            if (mood !== null) {
+                switch (mood) {
+                    case "glücklich":
+                        document.getElementById("glücklich").classList.add("selected")
+                        break
+                    case "entspannt":
+                        document.getElementById("entspannt").classList.add("selected")
+                        break
+                    case "gestresst":
+                        document.getElementById("gestresst").classList.add("selected")
+                        break
+                    case "traurig":
+                        document.getElementById("traurig").classList.add("selected")
+                        break
+                }
+            }
+
+            let symptoms = sessionStorage.getItem("symptoms")
+            if (symptoms !== null && symptoms !== "[]") {
+                let sympArray = JSON.parse(symptoms)
+                for (let i = 0; i < sympArray.length; i++) {
+                    switch (sympArray[i]) {
+                        case "fatigue":
+                            document.getElementById("fatigue").checked = true
+                            break
+                        case "dizziness":
+                            document.getElementById("dizziness").checked = true
+                            break
+                        case "shortness_of_breath":
+                            document.getElementById("shortness_of_breath").checked = true
+                            break
+                        case "headache":
+                            document.getElementById("headache").checked = true
+                            break
+                        case "pale_skin":
+                            document.getElementById("pale_skin").checked = true
+                            break
+                        case "weakness":
+                            document.getElementById("weakness").checked = true
+                            break
+                        case "cold_hands":
+                            document.getElementById("cold_hands").checked = true
+                            break
+                        case "concentration":
+                            document.getElementById("concentration").checked = true
+                            break
+                    }
+                }
+            }
+
+            let period = sessionStorage.getItem("period")
+            if (period !== null) {
+                switch (period) {
+                    case "nicht":
+                        document.getElementById("period-nicht").classList.add("selected")
+                        break
+                    case "leicht":
+                        document.getElementById("period-leicht").classList.add("selected")
+                        break
+                    case "mittel":
+                        document.getElementById("period-mittel").classList.add("selected")
+                        break
+                    case "stark":
+                        document.getElementById("period-stark").classList.add("selected")
+                        break
+                }
+            }
+
+            let sport_type = sessionStorage.getItem("sport_type")
+            if (sport_type !== null) {
+                switch (sport_type) {
+                    case "endurance":
+                        document.getElementById("endurance").checked = true
+                        break
+                    case "strength":
+                        document.getElementById("strength").checked = true
+                        break
+                    case "flexibility":
+                        document.getElementById("flexibility").checked = true
+                        break
+                }
+            }
+
+            let sport_intensity = sessionStorage.getItem("sport_intensity")
+            if (sport_intensity != null) {
+                switch (sport_intensity) {
+                    case "light":
+                        document.getElementById("intensity_light").classList.add("selected")
+                        break
+                    case "moderate":
+                        document.getElementById("intensity_moderate").classList.add("selected")
+                        break
+                    case "intense":
+                        document.getElementById("intensity_intense").classList.add("selected")
+                        break
+                }
+            }
+
+            let sport_duration = sessionStorage.getItem("sport_duration")
+            if (sport_duration != null) {
+                document.getElementById("duration").value = sport_duration.valueOf()
+            }
+
+            let sport_comment = sessionStorage.getItem("sport_comment")
+            if (sport_comment != null) {
+                document.getElementById("activities").value = sport_comment
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="navbar">
+        <a href="./index.html">
+            <span class="icon">🔬</span>
+            <div>Analyse</div>
+        </a>
+        <a href="#" style="background-color: #575757">
+            <span class="icon">📅</span>
+            <div>Daily Stuff</div>
+        </a>
+        <a href="./profil.html">
+            <span class="icon">👤</span>
+            <div>Profil</div>
+        </a>
+        <a href="./anaemie.html">
+            <span class="icon">💉</span>
+            <div>Anämie</div>
+        </a>
+        <a href="./chatbot.html">
+            <span class="icon">ℹ️</span>
+            <div>Chat</div>
+        </a>
+    </div>
+   
+    <!-- Inhalt für den "Daily Stuff"-Tab -->
+    <div class="main-content">
+        <div id="daily" class="container">
+            <div class="daily-header">
+                <h1>Tägliches Befinden</h1>
+                <span id="successMessage" style="display: none">Vielen Dank, dass du dein heutiges Befinden hinterlegt hast!</span>
+            </div>
+
+            <div class="mood-section" id="mood-section">
+                <h2 class="mood-question">Wie ist deine Stimmung heute?</h2>
+                <div class="mood-selector">
+                    <div class="mood-option" id="glücklich" data-mood="glücklich" onclick="selectMood(this)">
+                        <span class="emoji">😄</span>
+                        <span class="mood-label">Glücklich</span>
+                    </div>
+                    <div class="mood-option"id="entspannt" data-mood="entspannt" onclick="selectMood(this)">
+                        <span class="emoji">😌</span>
+                        <span class="mood-label">Entspannt</span>
+                    </div>
+                    <div class="mood-option" id="gestresst" data-mood="gestresst" onclick="selectMood(this)">
+                        <span class="emoji">😣</span>
+                        <span class="mood-label">Gestresst</span>
+                    </div>
+                    <div class="mood-option" id="traurig" data-mood="traurig" onclick="selectMood(this)">
+                        <span class="emoji">😢</span>
+                        <span class="mood-label">Traurig</span>
+                    </div>
+                </div>
+                <div id="moodResponse" class="mood-response"></div>
+                <span id="moodError" style="display: none" class="errormessage">Bitte wähle eine Stimmung aus</span>
+                <div class="button" id="saveMood">
+                    Weiter
+                </div>
+            </div>
+
+            <div id="symptoms-section" style="display: none">
+                <h2>Symptom-Check</h2>
+                <p class="symptoms-intro">Hast du heute eines dieser Symptome bemerkt?</p>
+
+                <div class="symptoms-grid">
+                    <div class="symptom-card">
+                        <input type="checkbox" id="fatigue" class="symptom-checkbox">
+                        <label for="fatigue">
+                            <span class="symptom-icon">😴</span>
+                            <span class="symptom-name">Müdigkeit</span>
+                        </label>
+                    </div>
+
+                    <div class="symptom-card">
+                        <input type="checkbox" id="dizziness" class="symptom-checkbox">
+                        <label for="dizziness">
+                            <span class="symptom-icon">💫</span>
+                            <span class="symptom-name">Schwindel</span>
+                        </label>
+                    </div>
+
+                    <div class="symptom-card">
+                        <input type="checkbox" id="shortness_of_breath" class="symptom-checkbox">
+                        <label for="shortness_of_breath">
+                            <span class="symptom-icon">🫁</span>
+                            <span class="symptom-name">Kurzatmigkeit</span>
+                        </label>
+                    </div>
+
+                    <div class="symptom-card">
+                        <input type="checkbox" id="headache" class="symptom-checkbox">
+                        <label for="headache">
+                            <span class="symptom-icon">🤕</span>
+                            <span class="symptom-name">Kopfschmerzen</span>
+                        </label>
+                    </div>
+
+                    <div class="symptom-card">
+                        <input type="checkbox" id="pale_skin" class="symptom-checkbox">
+                        <label for="pale_skin">
+                            <span class="symptom-icon">👤</span>
+                            <span class="symptom-name">Blasse Haut</span>
+                        </label>
+                    </div>
+
+                    <div class="symptom-card">
+                        <input type="checkbox" id="weakness" class="symptom-checkbox">
+                        <label for="weakness">
+                            <span class="symptom-icon">💪</span>
+                            <span class="symptom-name">Schwäche</span>
+                        </label>
+                    </div>
+
+                    <div class="symptom-card">
+                        <input type="checkbox" id="cold_hands" class="symptom-checkbox">
+                        <label for="cold_hands">
+                            <span class="symptom-icon">🧊</span>
+                            <span class="symptom-name">Kalte Hände/Füße</span>
+                        </label>
+                    </div>
+
+                    <div class="symptom-card">
+                        <input type="checkbox" id="concentration" class="symptom-checkbox">
+                        <label for="concentration">
+                            <span class="symptom-icon">🤔</span>
+                            <span class="symptom-name">Konzentrationsprobleme</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="symptomWarning" class="symptom-warning" style="display: none;">
+                    <!-- Hier erscheint die Warnung -->
+                </div>
+                <div style="text-align: center">
+                    <span id="symptomsError" style="display: none" class="errormessage">Bitte wähle mindestens ein Symptom aus</span>
+                </div>
+                <div class="button" style="text-align: center" id="saveSymptoms">
+                    Weiter
+                </div>
+            </div>
+
+            <div id="tracking-section" style="display: none">
+                <h2>Menstruations-Tracking</h2>
+                <p class="tracking-intro">Wie stark ist deine Menstruation heute?</p>
+
+                <div class="menstruation-options">
+                    <div class="menstruation-card" id="period-nicht" data-value="nicht" onclick="selectMenstruation(this)">
+                        <span class="menstruation-icon">🚫</span>
+                        <span class="menstruation-label">Keine</span>
+                    </div>
+
+                    <div class="menstruation-card" id="period-leicht" data-value="leicht" onclick="selectMenstruation(this)">
+                        <span class="menstruation-icon">💧</span>
+                        <span class="menstruation-label">Leicht</span>
+                    </div>
+
+                    <div class="menstruation-card" id="period-mittel" data-value="mittel" onclick="selectMenstruation(this)">
+                        <span class="menstruation-icon">💧💧</span>
+                        <span class="menstruation-label">Mittel</span>
+                    </div>
+
+                    <div class="menstruation-card" id="period-stark" data-value="stark" onclick="selectMenstruation(this)">
+                        <span class="menstruation-icon">💧💧💧</span>
+                        <span class="menstruation-label">Stark</span>
+                    </div>
+                </div>
+
+                <div id="menstruationWarning"  class="warning-yellow"></div>
+                <div style="text-align: center">
+                    <span class="errormessage" style="display: none" id="periodError">Bitte wähle die Intensität der Menstruationsblutung aus</span>
+                </div>
+                <div class="button" style="text-align: center" id="savePeriod">
+                    Weiter
+                </div>
+            </div>
+
+            <div id="sports-section" style="display: none">
+                <h2>Sportliche Aktivitäten</h2>
+                <p class="sports-intro">Welche sportlichen Aktivitäten hast du heute ausgeübt?</p>
+
+                <div class="sports-input-container">
+                    <!-- Sportart Auswahl -->
+                    <div class="sport-type-selector">
+                        <label>Art der Aktivität:</label>
+                        <div class="sport-categories">
+                            <div class="sport-category" data-intensity="high">
+                                <input type="radio" name="sport-type" id="endurance">
+                                <label for="endurance">
+                                    <span class="sport-icon">🏃‍♀️</span>
+                                    <span>Ausdauersport</span>
+                                    <small>(Laufen, Radfahren, Schwimmen)</small>
+                                </label>
+                            </div>
+
+                            <div class="sport-category" data-intensity="medium">
+                                <input type="radio" name="sport-type" id="strength">
+                                <label for="strength">
+                                    <span class="sport-icon">💪</span>
+                                    <span>Krafttraining</span>
+                                    <small>(Gewichte, Eigengewicht)</small>
+                                </label>
+                            </div>
+
+                            <div class="sport-category" data-intensity="low">
+                                <input type="radio" name="sport-type" id="flexibility">
+                                <label for="flexibility">
+                                    <span class="sport-icon">🧘‍♀️</span>
+                                    <span>Beweglichkeit</span>
+                                    <small>(Yoga, Dehnen, Pilates)</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Intensität und Dauer -->
+                    <div class="intensity-options">
+                        <button type="button" class="intensity-btn" id="intensity_light" data-intensity="light" onclick="selectIntensity(this)">Leicht</button>
+                        <button type="button" class="intensity-btn" id="intensity_moderate" data-intensity="moderate" onclick="selectIntensity(this)">Moderat</button>
+                        <button type="button" class="intensity-btn" id="intensity_intense" data-intensity="intense" onclick="selectIntensity(this)">Intensiv</button>
+                    </div>
+
+                        <div class="duration-input">
+                            <label for="duration">Dauer (Minuten):</label>
+                            <input type="number" id="duration" min="1" max="300">
+                        </div>
+                    </div>
+
+                    <!-- Zusätzliche Notizen -->
+                    <div class="notes-section">
+                        <label for="activities">Zusätzliche Notizen:</label>
+                        <textarea id="activities" rows="2" placeholder="Wie hast du dich während des Sports gefühlt?"></textarea>
+                    </div>
+                    <div class="button" style="margin-top: 20px; text-align: center" id="saveSport">
+                        Abschließen
+                    </div>
+                    <!-- Dynamische Warnung/Info Box -->
+                    <div id="sportWarning" class="sport-warning"></div>
+                </div>
+            </div>
+        </div>
+<script type="module">
+    import {saveMood, saveSymptoms, savePeriod, saveSport} from "./js/daily.js"
+
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("saveMood").addEventListener("click", saveMood)
+        document.getElementById("saveSymptoms").addEventListener("click", saveSymptoms)
+        document.getElementById("savePeriod").addEventListener("click", savePeriod)
+        document.getElementById("saveSport").addEventListener("click", saveSport)
+    });
+</script>
+</body>

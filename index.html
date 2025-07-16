@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anämie-Früherkennung</title>
+    <link rel="stylesheet" href="./style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" src="./js/functions.js"></script>
+    <script type="module" src="./js/user.js"></script>
+    <script type="module" src="./js/camera.js"></script>
+    <script type="module" src="./js/profile.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="module">
+        import {verify} from "./js/user.js";
+        import {updateHistoryChart} from "./js/functions.js";
+        await verify("standard")
+        updateHistoryChart()
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            prefillData()
+            document.getElementById("takePhoto").addEventListener("click", takePhoto)
+            document.getElementById("openCam").addEventListener("click", capture)
+            document.getElementById("takePhotoAgain").addEventListener("click", capture)
+            document.getElementById("analyze").addEventListener("click", detectNails)
+            document.getElementById("selectBoxes").addEventListener("click", changeBoxes)
+            document.getElementById("confirmBoxes").addEventListener("click", predictHb)
+        });
+    </script>
+</head>
+<body>
+<div class="navbar">
+    <a href="#" style="background-color: #575757">
+        <span class="icon">🔬</span>
+        <div>Analyse</div>
+    </a>
+    <a href="./daily.html">
+        <span class="icon">📅</span>
+        <div>Daily Stuff</div>
+    </a>
+    <a href="./profil.html">
+        <span class="icon">👤</span>
+        <div>Profil</div>
+    </a>
+    <a href="./anaemie.html">
+        <span class="icon">💉</span>
+        <div>Anämie</div>
+    </a>
+    <a href="./chatbot.html">
+        <span class="icon">ℹ️</span>
+        <div>Chat</div>
+    </a>
+</div>
+<div class="main-content">
+    <div id="analyse" class="container active">
+        <h1>Anämie-Früherkennung</h1>
+
+        <div class="instructions">
+            <h2>Anleitung:</h2>
+            <ol>
+                <li>Positionieren Sie Ihren Finger auf einer sauberen Glasfläche.</li>
+                <li>Stellen Sie sicher, dass ausreichend Licht vorhanden ist</li>
+                <li>Klicken Sie auf "Kamera öffnen"</li>
+                <li>Nehmen Sie das Bild auf und klicken Sie auf "Analysieren"</li>
+                <li>Warten Sie auf die Analyse</li>
+            </ol>
+        </div>
+
+        <div class="camera-container">
+            <video id="video" autoplay></video>
+            <div>
+                <div class="cam-container">
+                    <button class="button cam-button" id="openCam">
+                        <span class="icon">📷</span>
+                        Kamera öffnen
+                    </button>
+                    <button class="button cam-button" id="takePhoto" style="display: none">
+                        <span class="icon">📷</span>
+                        Foto aufnehmen
+                    </button>
+                    <canvas id="canvas"></canvas>
+                    <button class="button cam-button" id="takePhotoAgain" style="display: none">
+                        <span class="icon">📷</span>
+                        Neues Foto aufnehmen
+                    </button>
+                    <button class="button" id="analyze" style="display: none">
+                        <span class="icon">🔎</span>
+                        Analysieren
+                    </button>
+                    <button class="button" id="selectBoxes" style="display: none">
+                        Erkannte Fingernägel ändern
+                    </button>
+                    <div id="changeBoxes" style="display: none">
+                        <span>Bitte wähle die korrekt erkannten Fingernägel aus:</span>
+                        <button type="button" data-value="1">1</button>
+                        <button type="button" data-value="2">2</button>
+                        <button type="button" data-value="3">3</button>
+                        <button type="button" data-value="4">4</button>
+                        <button type="button" data-value="5">5</button>
+                    </div>
+                    <button class="button" id="confirmEditedBoxes" style="display: none;">Auswahl bestätigen</button>
+                    <button class="button" id="confirmBoxes" style="display: none">
+                        <span class="icon">☑️</span>
+                        Korrekte Erkennung bestätigen
+                    </button>
+                </div>
+                <div id="noFingernailsDetected" style="display: none">
+                    <span>Keine Fingernägel erkannt. Bitte nimm ein neues Foto auf.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="results" id="results" style="display: none">
+            <h2>Analyseergebnisse</h2>
+            <div class="result-card">
+                <div class="result-header">
+                    <h3>Hämoglobinwert</h3>
+                </div>
+                <div class="result-value" id="hemoglobinValue">-- g/L</div>
+                <div class="meter-container">
+                    <div class="meter">
+                        <div class="meter-bar" id="hemoglobinBar"></div>
+                    </div>
+                    <div class="meter-labels">
+                        <span>Niedrig (<120 g/L) </span>
+                        <span>Normal (120-160 g/L)</span>
+                        <span>Hoch (>160 g/L)</span>
+                    </div>
+                </div>
+                <div class="recommendation-box" id="recommendation"></div>
+            </div>
+        </div>
+
+        <div class="history-chart">
+            <canvas id="historyChart"></canvas>
+        </div>
+
+        <div class="details-grid">
+            <div class="detail-item">
+                <span class="label">Letzter Test:</span>
+                <span class="value" id="lastTest"></span>
+            </div>
+            <div class="detail-item">
+                <span class="label">Veränderung:</span>
+                <span class="value" id="change"></span>
+            </div>
+        </div>
+
+        <div class="export-options">
+            <button class="button" onclick="exportPDF()">Als PDF exportieren</button>
+            <button class="button" onclick="shareResults()">Ergebnisse teilen</button>
+        </div>
+    </div>
+</div>
+<script type="module">
+    import {submitChangedBoxes} from "./js/functions.js";
+
+    document.querySelectorAll('#changeBoxes button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.classList.toggle('selected');
+        });
+    });
+    document.getElementById("confirmEditedBoxes").addEventListener('click', () => {
+        let correctBoxesArray = []
+        document.querySelectorAll('#changeBoxes button').forEach(btn => {
+            if(btn.classList.contains('selected')){
+                correctBoxesArray.push(btn.dataset.value)
+            }
+        })
+        submitChangedBoxes(JSON.stringify(correctBoxesArray))
+    })
+</script>
+</body>
+</html>

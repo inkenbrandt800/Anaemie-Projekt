@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anämie-Früherkennung | Registrierung</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./js/user.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("registerform").addEventListener("submit", function(event) {
+        event.preventDefault();
+        register();
+      });
+    });
+  </script>
+  <style>
+    .error {
+      color: red;
+      font-size: smaller;
+      text-align: center;
+      display: none;
+    }
+    #registerform {
+      justify-content: center;
+    }
+    .oderdiv {
+      text-align: center;
+      font-size: small;
+    }
+  </style>
+</head>
+<body>
+<div class="main-content">
+  <div class="login-container">
+    <h1>Registrierung</h1>
+    <form id="registerform">
+      <div class="input-container">
+        <label for="username">Benutzername</label>
+        <input id="username" type="text" name="username" placeholder="Benutzername" required>
+      </div>
+      <div class="input-container">
+        <label for="password">Passwort</label>
+        <input id="password" type="password" name="password" placeholder="Passwort" required>
+      </div>
+      <div class="input-container">
+        <input id="password2" type="password" name="password2" placeholder="Passwort wiederholen" required>
+      </div>
+      <div style="text-align: center">
+        <span id="errormessage" class="error"></span>
+      </div>
+      <div class="login-button-container">
+        <button class="button" type="submit">Registrieren</button>
+      </div>
+    </form>
+    <div class="oderdiv">
+      <div class="separator"><span>oder</span></div>
+      <a href="./login.html">
+        <button class="button">Login</button>
+      </a>
+    </div>
+  </div>
+</div>
+</body>
+</html>
