@@ -1,6 +1,9 @@
 import base64, certifi, json
 import datetime
 
+from dotenv import load_dotenv, dotenv_values
+import os
+
 import bcrypt
 import jwt
 from flask import Flask, request, jsonify
@@ -17,16 +20,18 @@ from thefuzz import process
 import torch
 torch.backends.mps.is_available()
 
-app = Flask(__name__)
-CORS(app, origins=["http://localhost:8080"])
+load_dotenv(dotenv_path=".env.shared")
+load_dotenv(dotenv_path=".env.secret")
 
-uri = 'mongodb+srv://inkenmbrandt:iebzOoBZToz6gUa0@cluster0.6qqpb8u.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
+app = Flask(__name__)
+CORS(app, origins=[os.environ.get("FRONTEND_URL")])
+
+uri = os.environ.get("MONGODB_URI")
 client = MongoClient(uri, tlsCAFile=certifi.where())
 db = client["onlynails"]
 fs = gridfs.GridFS(db, collection="pictures")
 
-# Key zur Generierung vom Login-Token -- nicht ändern!
-SECRET_KEY = "iulhsidf798sfd**1823912enkasdasiudhfaoisdfjasd"
+SECRET_KEY = os.environ.get("TOKEN_SECRET")
 
 APP_KNOWLEDGE_BASE = {
     # --- Bedienung der Analyse ---
@@ -60,13 +65,6 @@ APP_KNOWLEDGE_BASE = {
 
 print("Lade Chatbot-Modell (microsoft/Phi-3-mini-4k-instruct)...")
 try:
-    '''chatbot_pipeline = pipeline(
-        "text-generation",
-        model="microsoft/Phi-3-mini-4k-instruct",
-        model_kwargs={"torch_dtype": "auto"},
-        device="cpu",
-        trust_remote_code=True
-    )'''
     ## --- device_map "mps" für Apple Silicion Chips, "cpu" für Berechnung über die CPU allg. ---
     model = AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct", device_map="mps")
     tokenizer = AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
@@ -101,7 +99,6 @@ def get_chatbot_answer():
                     "User: " + question
             )
             response = chatbot_pipeline(prompt, max_new_tokens=250, do_sample=True, temperature=0.7)
-            answer = response
             answer = response[0]["generated_text"][-1]['content']
             return answer
         else:

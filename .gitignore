@@ -1,4 +1,5 @@
 backend/best.pt
 backend/.idea
+backend/.env.secret
 .idea
 node_modules
